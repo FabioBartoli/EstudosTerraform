@@ -1,30 +1,30 @@
 provider "aws" {
-  profile = "linuxtips-terraform"
+  profile                 = "linuxtips-terraform"
   shared_credentials_file = "~/.aws/credentials"
-  region  = "us-east-1"
+  region                  = "us-east-1"
 }
 
 provider "aws" {
-  alias = "west"
-  region  = "us-west-2"
-  profile = "linuxtips-terraform"
+  alias                   = "west"
+  region                  = "us-west-2"
+  profile                 = "linuxtips-terraform"
   shared_credentials_file = "~/.aws/credentials"
 }
 
 terraform {
   backend "s3" {
     profile = "linuxtips-terraform"
-    bucket = "descomplicando-terraform-fabio-bartoli"
+    bucket  = "descomplicando-terraform-fabio-bartoli"
     #dynamodb_table = "terraform-state-lock-dynamo"
-    key    = "terraform-test.tfstate"
-    region = "us-east-1"
+    key     = "terraform-test.tfstate"
+    region  = "us-east-1"
     encrypt = true
   }
 
   required_providers {
     aws = {
       version = "~> 3.0"
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
     }
   }
 }

@@ -1,5 +1,5 @@
 module "servers" {
-  source = "./servers"
+  source  = "./servers"
   servers = 1
 }
 
