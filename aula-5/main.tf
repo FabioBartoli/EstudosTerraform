@@ -1,14 +1,10 @@
 provider "aws" {
-  profile                 = "linuxtips-terraform"
-  shared_credentials_file = "~/.aws/credentials"
   region                  = "us-east-1"
 }
 
 provider "aws" {
   alias                   = "west"
   region                  = "us-west-2"
-  profile                 = "linuxtips-terraform"
-  shared_credentials_file = "~/.aws/credentials"
 }
 
 terraform {
