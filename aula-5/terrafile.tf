@@ -1,6 +1,8 @@
+variable "blocks" {}
+
 module "servers" {
   source  = "./servers"
-  servers = 1
+  blocks = "${var.blocks}"
 }
 
 output "ip_address" {

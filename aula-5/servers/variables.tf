@@ -1,5 +1,5 @@
 variable "image_id" {
-  default = "ami-09db26f1ef0a9f406"
+  default     = "ami-09db26f1ef0a9f406"
   type        = string
   description = "The id of the machine image (AMI) to use for the server."
 
@@ -10,5 +10,38 @@ variable "image_id" {
 }
 
 variable "servers" {
-  
+  default = "staging"
+}
+
+variable "plus" {
+  default = 2
+}
+
+variable "environment" {
+  type        = string
+  default     = "staging"
+  description = "The environment of instance"
+}
+
+variable "sg" {
+  type    = list(string)
+  default = ["sg-073029a80d27e1e93"]
+}
+
+variable "instance_type" {
+  type    = list(string)
+  default = ["t1.micro", "t2.micro"]
+}
+variable "blocks" {
+  type = list(object({
+    device_name = string
+    volume_size = string
+    volume_type = string
+  }))
+  description = "List of EBS Blocks"
+}
+
+variable "name" {
+  type = string
+  default = "Testando Interpolação"
 }
