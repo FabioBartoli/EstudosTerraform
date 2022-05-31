@@ -29,9 +29,9 @@ resource "aws_eip" "ip" {
 }
 
 resource "aws_instance" "web2" {
-  count         = var.servers == "production" ? 2 : 1
   ami           = var.image_id
-  instance_type = "t2.micro"
+  for_each = toset(var.instance_type)
+  instance_type = each.value
   key_name      = "giropops-key"
   subnet_id     = "subnet-0f9354c79f0f58f70"
   security_groups = ["sg-073029a80d27e1e93"]

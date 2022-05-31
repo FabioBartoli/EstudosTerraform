@@ -27,3 +27,8 @@ variable "sg" {
   type = list(string)
   default = ["sg-073029a80d27e1e93"]
 }
+
+variable "instance_type" {
+  type = list(string)
+  default = ["t1.micro","t2.micro"]
+}
