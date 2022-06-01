@@ -11,9 +11,9 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'destroy_env', choices: loadChoice("destroy_env"), description: 'Destroy Env (Default: false)')
-        choice(name: 'provider', choices: loadChoice("provider_list"), description: 'Escolha a cloud para deploy (Default: aws)')
-        choice(name: 'terraform_version', choices: loadChoice("terraform_version"), description: 'Terraform Version (Default: 1.0.10)')
+        // choice(name: 'destroy_env', choices: loadChoice("destroy_env"), description: 'Destroy Env (Default: false)')
+        // choice(name: 'provider', choices: loadChoice("provider_list"), description: 'Escolha a cloud para deploy (Default: aws)')
+        // choice(name: 'terraform_version', choices: loadChoice("terraform_version"), description: 'Terraform Version (Default: 1.0.10)')
         choice(name: 'region', choices: ['us-east-1'], description: 'Region (Default: us-east-1)')
     }
 
