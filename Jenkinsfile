@@ -16,13 +16,14 @@ pipeline {
             steps {
                 script {
                     currentBuild.displayName = params.version
-                }
-                withAWS(credentials: 'aws-fabioacc') {
-                sh 'terraform init -input=false'
-                sh 'terraform workspace select ${environment}'
-                sh "terraform plan -input=false -out tfplan -var 'version=${params.version}' --var-file=environments/${params.environment}.tfvars"
-                sh 'terraform show -no-color tfplan > tfplan.txt'
+                    withAWS(credentials: 'aws-fabioacc') {
+                    sh 'terraform init -input=false'
+                    sh 'terraform workspace select ${environment}'
+                    sh "terraform plan -input=false -out tfplan -var 'version=${params.version}' --var-file=environments/${params.environment}.tfvars"
+                    sh 'terraform show -no-color tfplan > tfplan.txt'
+                }   
             }
+                
         }
         }
 
@@ -44,9 +45,11 @@ pipeline {
 
         stage('Apply') {
             steps {
-                withAWS(credentials: 'aws-fabioacc') {
-                sh "terraform apply -input=false tfplan"
-            }
+                script {
+                    withAWS(credentials: 'aws-fabioacc') {
+                    sh "terraform apply -input=false tfplan"
+                    }   
+                }
             }
         }
     }
