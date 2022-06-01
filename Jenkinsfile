@@ -8,8 +8,6 @@ pipeline {
     }
     
     environment {
-        AWS_ACCESS_KEY_ID     = credentials('aws-fabioacc')
-        AWS_SECRET_ACCESS_KEY = credentials('aws-fabioacc')
         TF_IN_AUTOMATION      = '1'
     }
 
@@ -19,11 +17,13 @@ pipeline {
                 script {
                     currentBuild.displayName = params.version
                 }
+                withAWS(credentials: 'aws-fabioacc') {
                 sh 'terraform init -input=false'
                 sh 'terraform workspace select ${environment}'
                 sh "terraform plan -input=false -out tfplan -var 'version=${params.version}' --var-file=environments/${params.environment}.tfvars"
                 sh 'terraform show -no-color tfplan > tfplan.txt'
             }
+        }
         }
 
         stage('Approval') {
