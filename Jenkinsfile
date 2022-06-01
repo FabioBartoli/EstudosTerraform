@@ -44,7 +44,9 @@ pipeline {
 
         stage('Apply') {
             steps {
+                withAWS(credentials: 'aws-fabioacc') {
                 sh "terraform apply -input=false tfplan"
+            }
             }
         }
     }
