@@ -1,216 +1,57 @@
 pipeline {
-
-    agent {
-        node {
-            label 'jenkins-node'
-        }
-    }
-
-    options {
-        buildDiscarder(logRotator(numToKeepStr: "10"))
-    }
+    agent any
 
     parameters {
-        // choice(name: 'destroy_env', choices: loadChoice("destroy_env"), description: 'Destroy Env (Default: false)')
-        // choice(name: 'provider', choices: loadChoice("provider_list"), description: 'Escolha a cloud para deploy (Default: aws)')
-        // choice(name: 'terraform_version', choices: loadChoice("terraform_version"), description: 'Terraform Version (Default: 1.0.10)')
-        choice(name: 'region', choices: ['us-east-1'], description: 'Region (Default: us-east-1)')
+        string(name: 'environment', defaultValue: 'default', description: 'Workspace/environment file to use for deployment')
+        string(name: 'version', defaultValue: '', description: 'Version variable to pass to Terraform')
+        booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
     }
-
+    
     environment {
-        APPLICATION_NAME="poc-jenkins-grafana"
-        ENV=""
+        AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        TF_IN_AUTOMATION      = '1'
     }
 
     stages {
-        stage('Approval for productive environments') {
-            when {
-                anyOf {
-                    branch 'master'
-                }
-            }
+        stage('Plan') {
             steps {
                 script {
-                    timeout(time: 1, unit: 'DAYS') {
-                        approval(env.GIT_BRANCH, env.GIT_URL)
-                    }
+                    currentBuild.displayName = params.version
+                }
+                sh 'terraform init -input=false'
+                sh 'terraform workspace select ${environment}'
+                sh "terraform plan -input=false -out tfplan -var 'version=${params.version}' --var-file=environments/${params.environment}.tfvars"
+                sh 'terraform show -no-color tfplan > tfplan.txt'
+            }
+        }
+
+        stage('Approval') {
+            when {
+                not {
+                    equals expected: true, actual: params.autoApprove
+                }
+            }
+
+            steps {
+                script {
+                    def plan = readFile 'tfplan.txt'
+                    input message: "Do you want to apply the plan?",
+                        parameters: [text(name: 'Plan', description: 'Please review the plan', defaultValue: plan)]
                 }
             }
         }
 
-        stage('Set Environment') {
-            parallel {
-                stage('Development') {
-                    when {
-                        not {
-                            anyOf {
-                                branch 'master';
-                                branch 'staging'
-                            }
-                        }
-                    }
-
-                    steps {
-                        script {
-                            ENV = "dev"
-                        }
-                    }
-                }
-
-                stage('Staging') {
-                    when {
-                        branch 'staging'
-                    }
-                  
-                    steps {
-                        script {
-                            ENV = "stg"
-                        }
-                    }
-                }
-
-                stage('Production') {
-                    when {
-                        branch 'master'
-                    }
-                   
-                    steps {
-                        script {
-                            ENV = "prd"
-                        }
-                    }
-                }
+        stage('Apply') {
+            steps {
+                sh "terraform apply -input=false tfplan"
             }
         }
+    }
 
-        // stage('Install Dependencies') {
-        //     steps {
-        //         sh "scripts/install-dependencies.sh ${params.terraform_version}"
-        //     }
-        // }
-
-        // stage('Load Modules'){
-        //     steps {
-        //         loadModules()
-        //     }
-        // }
-
-        // stage('Configure Terraform'){
-        //     steps {
-        //         script{
-        //             configureTerraform(APPLICATION_NAME, params.provider, ENV)
-        //         }
-        //     }
-        // }
-
-        // stage('Destroy Environment') {
-        //     parallel {
-        //         stage('AWS') {
-        //             when {
-        //                 anyOf {
-        //                     expression { params.provider == "aws" && params.destroy_env == "true" }    
-        //                 }
-        //             }
-        //             steps {
-        //                 destroyEnv(ENV, params.region, APPLICATION_NAME, MODULES, params.provider)
-        //             }
-        //         }
-
-        //         stage('Azure') {
-        //             when {
-        //                 anyOf {
-        //                     expression { params.provider == "azure" && params.destroy_env == "true" }
-        //                 }
-        //             }
-        //             steps {
-        //                 destroyEnv(ENV, params.region, APPLICATION_NAME, MODULES, params.provider)
-        //             }
-        //         }
-        //     }
-        // }
-       
-        // stage ('Build App') {
-        //     when {
-        //         expression { 
-        //             params.destroy_env == "false"
-        //         }
-        //     }
-
-        //     steps {
-        //         sh "scripts/build-app.sh ${ENV} ${APPLICATION_NAME}"
-        //     }
-        // }
-
-        // stage(' ') {   
-		// 	parallel {   
-		// 		stage('AWS') {
-		// 			when { 
-        //                 allOf {
-		// 				    expression { params.provider == "aws" }
-        //                     expression { params.destroy_env == "false" }				
-        //                 } 
-		// 			} 
-        //             stages {
-        //                 stage('Test IaC') {
-        //                     steps {
-        //                         script {
-        //                             testIac(ENV, params.region, APPLICATION_NAME, MODULES, params.provider)
-        //                         }
-        //                     }
-        //                 }          
-
-        //                 stage('Deploy Environment') {
-        //                     steps {
-        //                         script {
-        //                             deployEnv(ENV, params.region, APPLICATION_NAME, MODULES, params.provider)
-        //                         }
-        //                     }
-        //                 }
-
-        //                 stage('Deploy App') {
-        //                     steps {
-        //                         script {
-        //                             deployAppServerless(ENV, params.provider)
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-
-        //         stage('Azure') {
-		// 			when { 
-        //                 allOf {
-		// 				    expression { params.provider == "azure" }
-        //                     expression { params.destroy_env == "false" }				
-        //                 } 
-		// 			}
-        //             stages {
-        //                 stage('Test IaC') {
-        //                     steps {
-        //                         script {
-        //                             echo "rodando TestIaC Azure..."
-        //                         }
-        //                     }
-        //                 }          
-
-        //                 stage('Deploy Environment') {
-        //                     steps {
-        //                         script {
-        //                             echo "rodando DeployEnv Azure..."
-        //                         }
-        //                     }
-        //                 }
-
-        //                 stage('Deploy App') {
-        //                     steps {
-        //                         script {
-        //                             echo "rodando DeployApp Azure..."
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+    post {
+        always {
+            archiveArtifacts artifacts: 'tfplan.txt'
+        }
     }
 }
