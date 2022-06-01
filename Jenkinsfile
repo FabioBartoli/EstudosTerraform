@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         string(name: 'environment', defaultValue: 'default', description: 'Workspace/environment file to use for deployment')
-        string(name: 'version', defaultValue: '', description: 'Version variable to pass to Terraform')
+        // string(name: 'version', defaultValue: '', description: 'Version variable to pass to Terraform')
         booleanParam(name: 'autoApprove', defaultValue: false, description: 'Automatically run apply after generating plan?')
     }
     
@@ -18,9 +18,9 @@ pipeline {
                     currentBuild.displayName = params.version
                     withAWS(credentials: 'aws-fabioacc') {
                     sh 'terraform --version'
-                    sh 'terraform init -input=false'
+                    sh 'terraform init'
                     sh 'terraform workspace select ${environment}'
-                    sh "terraform plan -input=false -out tfplan -var 'version=${params.version}'"
+                    sh "terraform plan -out tfplan"
                     sh 'terraform show -no-color tfplan > tfplan.txt'
                 }   
             }
@@ -48,7 +48,7 @@ pipeline {
             steps {
                 script {
                     withAWS(credentials: 'aws-fabioacc') {
-                    sh "terraform apply -input=false tfplan"
+                    sh "terraform apply tfplan"
                     }   
                 }
             }
