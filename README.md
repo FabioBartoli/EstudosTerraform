@@ -6,7 +6,7 @@ Estudos de IaC com terraform
 <details>
 <summary>Result</summary>
   
-https://github.com/WiFabio/EstudosTerraform/blob/main/Trilha%20(video-converter.com).webm?
+![Nome](Trilha (video-converter.com).webm)
 
   
 </details>
