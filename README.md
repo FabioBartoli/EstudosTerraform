@@ -6,9 +6,7 @@ Estudos de IaC com terraform
 <details>
 <summary>Result</summary>
   
-  
-[![Demo Doccou alpha](https://www.youtube.com/watch?v=lTiO8EIv0BI&ab_channel=Ingresso.com)
-
+https://github.com/WiFabio/EstudosTerraform/blob/main/Trilha%20(video-converter.com).webm?
 
   
 </details>
